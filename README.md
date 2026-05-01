@@ -2,6 +2,7 @@
 
 ### Versions
 [1.21.1](https://github.com/Weyne1/random-crafts/tree/1.21.1)
+[1.21.3](https://github.com/Weyne1/random-crafts/tree/1.21.3)
 
 ## Updating / Downgrading Versions
 
