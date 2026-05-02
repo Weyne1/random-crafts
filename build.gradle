@@ -156,6 +156,24 @@ subprojects {
         dependsOn rootProject.tasks.named('validateBuildConfig')
     }
 
+    processResources {
+        // Properties for mod configs
+        def replaceProperties = [
+                minecraft_version        : rootProject.minecraft_version,
+                mod_version              : rootProject.mod_version,
+                fabric_loader_version    : rootProject.fabric_loader_version,
+                fabric_api_version       : rootProject.fabric_api_version,
+                neoforge_version         : rootProject.neoforge_version,
+                architectury_api_version : rootProject.architectury_api_version
+        ]
+
+        inputs.properties replaceProperties
+
+        filesMatching(["fabric.mod.json", "META-INF/neoforge.mods.toml"]) {
+            expand replaceProperties
+        }
+    }
+
     // Configure Maven publishing.
     publishing {
         publications {
