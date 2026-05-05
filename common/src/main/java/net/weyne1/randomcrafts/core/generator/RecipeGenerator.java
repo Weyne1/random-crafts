@@ -103,34 +103,46 @@ public class RecipeGenerator {
      * Ищет подходящие предметы с учетом тиров, фильтров и адаптивного поиска вниз
      */
     private List<CoreItem> findCandidatesFor(CoreItem output, int bonusSpread, boolean isEnderEye) {
-        int outTier = output.tier();
+        int outTier = Math.max(0, output.tier());
         int minT, maxT;
 
         if (settings.useTiers()) {
+            // Если тир низкий (0, 1, 2), разрешаем брать всё из этого начального диапазона
             if (outTier <= 2) {
-                minT = -1;
+                minT = 0;
                 maxT = 2;
             } else {
-                minT = Math.max(-1, outTier - (settings.tierSpread() + bonusSpread));
+                // Для высоких тиров ищем ингредиенты СТРОГО дешевле выхода, но не ниже 0
+                minT = Math.max(0, outTier - (settings.tierSpread() + bonusSpread));
                 maxT = outTier - 1;
             }
         } else {
-            minT = -1;
+            // Если тиры отключены — берем любой предмет с тирами от 0 до 100
+            minT = 0;
             maxT = 100;
         }
 
-        // Адаптивный поиск (спуск по тирам вниз, если пусто)
-        for (int fallback = 0; fallback < 20; fallback++) {
-            int currentMin = Math.max(-1, minT - fallback);
+        // Адаптивный поиск (спуск по тирам вниз, если в заданном диапазоне пусто)
+        // fallback до 10 шагов позволит найти хоть что-то, даже если это будет тир 0
+        for (int fallback = 0; fallback <= 10; fallback++) {
+            int currentMin = Math.max(0, minT - fallback);
+
+            // Чтобы не застрять, если maxT оказался меньше текущего min из-за сдвига
+            int currentMax = Math.max(currentMin, maxT);
 
             List<CoreItem> found = allPossibleIngredients.stream()
-                    .filter(i -> i.tier() >= currentMin && i.tier() <= maxT)
-                    .filter(i -> !i.id().equals(output.id())) // Рекурсия
-                    .filter(i -> isAllowedAsIngredient(i.vanillaItem())) // GameRules
-                    .filter(i -> !isEnderEye || i.tier() != 14) // Спец условие для Ока
+                    .filter(i -> {
+                        int iTier = i.tier();
+                        return iTier >= currentMin && iTier <= currentMax;
+                    })
+                    .filter(i -> !i.id().equals(output.id())) // Защита от рекурсии "предмет из самого себя"
+                    .filter(i -> isAllowedAsIngredient(i.vanillaItem())) // Проверка черного списка/правил
+                    .filter(i -> !isEnderEye || i.tier() != 14) // Спец. условие для Ока Края (не даем энд-ресурсы)
                     .toList();
 
             if (!found.isEmpty()) return found;
+
+            if (currentMin == 0) break;
         }
 
         return Collections.emptyList();
@@ -150,13 +162,13 @@ public class RecipeGenerator {
     // --- Группы запрещенных классов ---
 
     private static final Set<Class<? extends Item>> TOOLS_AND_ARMOR = Set.of(
-            ArmorItem.class, DiggerItem.class, SwordItem.class, ShieldItem.class,
-            BowItem.class, CrossbowItem.class, TridentItem.class, SpyglassItem.class,
-            ProjectileWeaponItem.class, FishingRodItem.class, BrushItem.class
+            ArmorItem.class, DiggerItem.class, SwordItem.class, ShieldItem.class, FlintAndSteelItem.class,
+            BowItem.class, CrossbowItem.class, TridentItem.class, ShearsItem.class,
+            SpyglassItem.class, ProjectileWeaponItem.class, FishingRodItem.class, BrushItem.class
     );
 
     private static final Set<Class<? extends Block>> FUNCTIONAL_BLOCKS = Set.of(
-            AbstractFurnaceBlock.class, CraftingTableBlock.class, EnchantingTableBlock.class,
+            AbstractFurnaceBlock.class, CraftingTableBlock.class, EnchantingTableBlock.class, CrafterBlock.class,
             AnvilBlock.class, SmithingTableBlock.class, LoomBlock.class, CartographyTableBlock.class,
             GrindstoneBlock.class, LecternBlock.class, StonecutterBlock.class, BrewingStandBlock.class,
             FletchingTableBlock.class, TrappedChestBlock.class, BeaconBlock.class, BarrelBlock.class

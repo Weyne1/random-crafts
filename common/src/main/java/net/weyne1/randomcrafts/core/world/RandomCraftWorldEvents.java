@@ -8,10 +8,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -155,15 +153,19 @@ public class RandomCraftWorldEvents {
                 .getRecipes()
                 .stream()
                 .filter(holder -> holder.value() instanceof CraftingRecipe)
-                .map(holder -> convertToVanillaData((RecipeHolder<CraftingRecipe>) holder, world))
+                .map(holder -> convertToVanillaData(holder, world))
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(VanillaRecipeData::id))
                 .toList();
 
-        LOGGER.info("Extracted {} recipes for shuffle pool", vanillaRecipes.size());
+                LOGGER.info("Extracted {} recipes for shuffle pool", vanillaRecipes.size());
 
         // Подготовка графа
         RecipeGraph graph = CoreGraphBuilder.build(vanillaRecipes);
+
+        //LOGGER.info("=== DEBUG RECIPE GRAPH ===");
+        //graph.printTree("minecraft:iron_ingot", "", new HashSet<>());
+
         applyTiersToGraph(graph, vanillaRecipes);
 
         // Генерация новых рецептов
