@@ -189,6 +189,7 @@ public class RandomCraftWorldEvents {
     /**
      * Превращает технический рецепт Minecraft в простые данные.
      */
+    @SuppressWarnings("deprecation")
     private static VanillaRecipeData convertToVanillaData(RecipeHolder<?> holder, ServerLevel world) {
         if (!(holder.value() instanceof CraftingRecipe recipe)) return null;
         if (recipe.isSpecial()) return null;
@@ -234,6 +235,7 @@ public class RandomCraftWorldEvents {
     /**
      * Логика разбора Shaped рецепта
      */
+    @SuppressWarnings("deprecation")
     private static void extractShapedData(ShapedRecipe shaped, List<String> pattern, List<Item> inputs) {
         int width = shaped.getWidth();
         int height = shaped.getHeight();

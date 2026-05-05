@@ -3,6 +3,7 @@ package net.weyne1.randomcrafts.core.generator;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.*;
@@ -214,8 +215,11 @@ public class RecipeGenerator {
         boolean hasColorName = path.matches(".*(orange|magenta|light_blue|yellow|lime|pink|gray|light_gray|cyan|purple|blue|brown|green|red|black).*");
         if (!hasColorName) return false;
 
-        // 1. Баннеры, кровати
-        if (item instanceof BannerItem || item instanceof BedItem) return true;
+        // 1. Баннеры, кровати, седла гастов
+        if (item instanceof BannerItem
+                || item instanceof BedItem
+                || item.getDefaultInstance().is(ItemTags.HARNESSES))
+            return true;
 
         // 2. Блоки
         if (item instanceof BlockItem blockItem) {

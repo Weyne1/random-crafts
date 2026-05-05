@@ -6,7 +6,7 @@ plugins {
 
 // find pack versions here: https://minecraft.wiki/w/Pack_format
 def datapackPackFormatByMinecraftVersionRange = [
-        [min: '1.21.5', max: '1.21.5', format: 71],
+        [min: '1.21.6', max: '1.21.6', format: 80],
 ]
 
 static List<Integer> parseMcVersion(String v) {
@@ -60,7 +60,7 @@ tasks.register('validateBuildConfig') {
         int packFormat
         try {
             packFormat = Integer.parseInt(rawPackFormat)
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
             throw new GradleException("Property 'mc_pack_format' must be an integer, got: '${rawPackFormat}'.")
         }
 

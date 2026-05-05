@@ -146,6 +146,7 @@ public class TierCalculator {
             Map.entry(ItemTags.COAL_ORES, 6),
             Map.entry(ItemTags.STONE_TOOL_MATERIALS, 6),
             Map.entry(ItemTags.COPPER_ORES, 6),
+            Map.entry(ItemTags.HARNESSES, 6),
             Map.entry(ItemTags.STONE_CRAFTING_MATERIALS, 7),
             Map.entry(ItemTags.STONE_BRICKS, 8),
             Map.entry(ItemTags.WALLS, 8),
