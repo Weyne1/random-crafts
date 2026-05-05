@@ -27,9 +27,8 @@ public class RandomCraftsGameRules {
     }
 
     private static GameRules.Key<GameRules.BooleanValue> register(String name, boolean defaultValue) {
-        return GameRules.register(name, GameRules.Category.MISC, GameRules.BooleanValue.create(defaultValue, (server, value) -> {
-            broadcastChange(server, name, String.valueOf(value.get()));
-        }));
+        return GameRules.register(name, GameRules.Category.MISC, GameRules.BooleanValue.create(defaultValue, (server, value) ->
+                broadcastChange(server, name, String.valueOf(value.get()))));
     }
 
     private static GameRules.Key<GameRules.IntegerValue> register() {

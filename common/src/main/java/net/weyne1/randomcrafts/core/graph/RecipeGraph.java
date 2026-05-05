@@ -5,6 +5,8 @@ import net.weyne1.randomcrafts.core.recipe.CoreRecipe;
 
 import java.util.*;
 
+import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
+
 public class RecipeGraph {
     private final Map<String, List<CoreRecipe>> recipesByOutput = new HashMap<>();
     private final Map<String, CoreItem> coreItemById = new HashMap<>();
@@ -20,24 +22,10 @@ public class RecipeGraph {
     }
 
     public void setTier(CoreItem item, int tier) {
-        CoreItem old = coreItemById.get(item.id());
-        if (old == null) return;
-
-        CoreItem updated = new CoreItem(old.id(), old.name(), tier, old.vanillaItem());
-
-        coreItemById.put(item.id(), updated);
-
-        List<CoreRecipe> recipes = recipesByOutput.get(item.id());
-        if (recipes == null) return;
-
-        List<CoreRecipe> updatedList = new ArrayList<>();
-
-        for (CoreRecipe recipe : recipes) {
-            updatedList.add(new CoreRecipe(recipe.id(), updated, recipe.inputs(), recipe.outputCount(),
-                    recipe.isShapeless(), recipe.patternLayout(), recipe.category()));
+        CoreItem existing = coreItemById.get(item.id());
+        if (existing != null) {
+            existing.setTier(tier);
         }
-
-        recipesByOutput.put(item.id(), updatedList);
     }
 
     /* ===================== RECIPES ===================== */
@@ -68,6 +56,29 @@ public class RecipeGraph {
                 .flatMap(List::stream)
                 .sorted(Comparator.comparing(CoreRecipe::id))
                 .toList();
+    }
+
+    public void printTree(String itemId, String indent, Set<String> visited) {
+        CoreItem item = coreItemById.get(itemId);
+        if (item == null) return;
+
+        if (visited.contains(itemId)) {
+            LOGGER.info("{}-> {} [CYCLE DETECTED]", indent, item.name());
+            return;
+        }
+
+        LOGGER.info("{}-> {} [Tier: {}]", indent, item.name(), item.tier());
+
+        List<CoreRecipe> recipes = recipesByOutput.get(itemId);
+        if (recipes != null) {
+            visited.add(itemId);
+
+            for (CoreRecipe recipe : recipes) {
+                for (CoreItem input : recipe.inputs()) {
+                    printTree(input.id(), indent + "   ", new HashSet<>(visited));
+                }
+            }
+        }
     }
 
     /* ===================== INTERNAL ===================== */
