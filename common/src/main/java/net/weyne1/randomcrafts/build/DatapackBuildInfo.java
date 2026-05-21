@@ -1,5 +1,8 @@
 package net.weyne1.randomcrafts.build;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -19,12 +22,20 @@ public final class DatapackBuildInfo {
         return requiredString("datapack_description");
     }
 
-    public static int packFormat() {
-        String raw = requiredString("pack_format");
+    public static JsonElement minPackFormat() {
+        return parseFormat("min_pack_format");
+    }
+
+    public static JsonElement maxPackFormat() {
+        return parseFormat("max_pack_format");
+    }
+
+    private static JsonElement parseFormat(String key) {
+        String raw = requiredString(key);
         try {
-            return Integer.parseInt(raw.trim());
-        } catch (NumberFormatException e) {
-            throw new IllegalStateException("Invalid integer for 'pack_format' in " + RESOURCE_PATH + ": '" + raw + "'", e);
+            return JsonParser.parseString(raw);
+        } catch (JsonSyntaxException e) {
+            throw new IllegalStateException("Invalid JSON format for '" + key + "' in " + RESOURCE_PATH + ": '" + raw + "'", e);
         }
     }
 

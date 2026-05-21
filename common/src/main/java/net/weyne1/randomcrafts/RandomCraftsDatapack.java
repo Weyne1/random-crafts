@@ -80,7 +80,8 @@ public class RandomCraftsDatapack {
 
         try (Writer writer = new FileWriter(packFile)) {
             Map<String, Object> pack = new LinkedHashMap<>();
-            pack.put("pack_format", DatapackBuildInfo.packFormat());
+            pack.put("min_format", DatapackBuildInfo.minPackFormat());
+            pack.put("max_format", DatapackBuildInfo.maxPackFormat());
             pack.put("description", DatapackBuildInfo.datapackDescription());
 
             Map<String, Object> rootObj = new LinkedHashMap<>();

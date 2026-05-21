@@ -13,8 +13,6 @@ public class RandomCraftsGameRules {
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_COLOR_BLOCKS;
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_TOOLS_ARMOR;
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_FUNCTIONAL_BLOCKS;
-
-    // Новое правило для разброса тиров
     public static GameRules.Key<GameRules.IntegerValue> TIER_SPREAD;
 
     public static void init() {
@@ -52,7 +50,7 @@ public class RandomCraftsGameRules {
                     .withStyle(ChatFormatting.YELLOW);
 
             server.getPlayerList().getPlayers().forEach(player -> {
-                if (server.getPlayerList().isOp(player.getGameProfile())) {
+                if (server.getPlayerList().isOp(player.nameAndId())) {
                     player.sendSystemMessage(msg);
                 }
             });

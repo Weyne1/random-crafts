@@ -6,7 +6,8 @@ plugins {
 
 // find pack versions here: https://minecraft.wiki/w/Pack_format
 def datapackPackFormatByMinecraftVersionRange = [
-        [min: '1.21.6', max: '1.21.6', format: 80],
+        [min: '1.21.9', max: '1.21.10', min_format: '[88, 0]', max_format: '[88, 0]'],
+        [min: '1.21.11', max: '1.21.11', min_format: '[88, 0]', max_format: '[94, 1]'],
 ]
 
 static List<Integer> parseMcVersion(String v) {
@@ -52,16 +53,11 @@ tasks.register('validateBuildConfig') {
             throw new GradleException("Property 'minecraft_version' must be 'X.Y' or 'X.Y.Z', got: '${minecraftVersion}'.")
         }
 
-        String rawPackFormat = (rootProject.findProperty('mc_pack_format') ?: '').toString().trim()
-        if (rawPackFormat.isEmpty()) {
-            throw new GradleException("Property 'mc_pack_format' is missing/blank in gradle.properties.")
-        }
+        String rawMinFormat = (rootProject.findProperty('mc_min_pack_format') ?: '').toString().trim()
+        String rawMaxFormat = (rootProject.findProperty('mc_max_pack_format') ?: '').toString().trim()
 
-        int packFormat
-        try {
-            packFormat = Integer.parseInt(rawPackFormat)
-        } catch (NumberFormatException ignored) {
-            throw new GradleException("Property 'mc_pack_format' must be an integer, got: '${rawPackFormat}'.")
+        if (rawMinFormat.isEmpty() || rawMaxFormat.isEmpty()) {
+            throw new GradleException("Properties 'mc_min_pack_format' or 'mc_max_pack_format' are missing/blank in gradle.properties.")
         }
 
         def matching = datapackPackFormatByMinecraftVersionRange.find { r ->
@@ -74,11 +70,19 @@ tasks.register('validateBuildConfig') {
             )
         }
 
-        if (packFormat != (matching.format as int)) {
+        def expectedMin = matching.min_format.toString().replaceAll("\\s", "")
+        def actualMin = rawMinFormat.replaceAll("\\s", "")
+        def actualMax = rawMaxFormat.replaceAll("\\s", "") // Просто для проверки, что он не пустой
+
+        if (actualMin != expectedMin) {
             throw new GradleException(
-                    "Mismatch: minecraft_version='${minecraftVersion}' expects mc_pack_format=${matching.format}, " +
-                            "but gradle.properties has mc_pack_format=${packFormat}. Fix gradle.properties or update the mapping."
+                    "Mismatch: minecraft_version='${minecraftVersion}' expects min_format=${expectedMin}, " +
+                            "but gradle.properties has min_pack_format=${actualMin}."
             )
+        }
+
+        if (!actualMax.startsWith("[") && !actualMax.matches("\\d+")) {
+            throw new GradleException("Property 'mc_max_pack_format' must be a number or an array, got: '${rawMaxFormat}'")
         }
     }
 }
@@ -161,6 +165,10 @@ subprojects {
         def replaceProperties = [
                 minecraft_version        : rootProject.minecraft_version,
                 mod_version              : rootProject.mod_version,
+                datapack_name            : rootProject.datapack_name,
+                datapack_description     : rootProject.datapack_description,
+                min_pack_format          : rootProject.mc_min_pack_format,
+                max_pack_format          : rootProject.mc_max_pack_format,
                 fabric_loader_version    : rootProject.fabric_loader_version,
                 fabric_api_version       : rootProject.fabric_api_version,
                 neoforge_version         : rootProject.neoforge_version,
@@ -169,7 +177,7 @@ subprojects {
 
         inputs.properties replaceProperties
 
-        filesMatching(["fabric.mod.json", "META-INF/neoforge.mods.toml"]) {
+        filesMatching(["fabric.mod.json", "META-INF/neoforge.mods.toml", "randomcrafts-datapack.properties"]) {
             expand replaceProperties
         }
     }
