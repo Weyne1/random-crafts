@@ -2,9 +2,11 @@ package net.weyne1.randomcrafts.core.generator;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.item.*;
@@ -188,8 +190,9 @@ public class RecipeGenerator {
         if (TOOLS_AND_ARMOR.stream().anyMatch(clazz -> clazz.isInstance(item))) return true;
         if (item instanceof BoatItem || item == Items.ELYTRA) return true;
 
-        // Броня: через компонент EQUIPPABLE
         ItemStack stack = item.getDefaultInstance();
+
+        // Броня: через компонент EQUIPPABLE
         Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
         if (equippable != null) {
             EquipmentSlot slot = equippable.slot();
@@ -197,8 +200,17 @@ public class RecipeGenerator {
                     slot == EquipmentSlot.LEGS || slot == EquipmentSlot.FEET) return true;
         }
 
-        // Инструменты/оружие: через компонент TOOL
-        return stack.has(DataComponents.TOOL);
+        // Инструменты: через компонент TOOL
+        if (stack.has(DataComponents.TOOL)) return true;
+
+        // Оружие (включая копья и мечи): проверяем наличие боевых атрибутов
+        ItemAttributeModifiers modifiers = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
+        if (modifiers != null) {
+            return modifiers.modifiers().stream()
+                    .anyMatch(mod -> mod.attribute().equals(Attributes.ATTACK_DAMAGE));
+        }
+
+        return false;
     }
 
     private boolean isFunctionalBlock(Item item) {
@@ -224,7 +236,7 @@ public class RecipeGenerator {
         // Красители разрешены
         if (item instanceof DyeItem) return false;
 
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
         String path = id.getPath();
 
         // Список всех цветов для поиска в ID

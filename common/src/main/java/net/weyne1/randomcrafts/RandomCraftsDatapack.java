@@ -2,7 +2,7 @@ package net.weyne1.randomcrafts;
 
 import com.google.gson.GsonBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.weyne1.randomcrafts.build.DatapackBuildInfo;
@@ -95,7 +95,7 @@ public class RandomCraftsDatapack {
         Item outputItem = recipe.output().vanillaItem();
         if (outputItem == Items.AIR) return;
 
-        ResourceLocation outputId = BuiltInRegistries.ITEM.getKey(outputItem);
+        Identifier outputId = BuiltInRegistries.ITEM.getKey(outputItem);
         String raw = recipe.id();
         String fileName = (raw.contains(":") ? raw.split(":")[1] : raw) + ".json";
         File file = new File(recipesFolder, fileName);

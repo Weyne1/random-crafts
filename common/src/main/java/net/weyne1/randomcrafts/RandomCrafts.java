@@ -9,7 +9,6 @@ public final class RandomCrafts {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static void init() {
-        RandomCraftsGameRules.init();
         RandomCraftWorldEvents.init();
     }
 }

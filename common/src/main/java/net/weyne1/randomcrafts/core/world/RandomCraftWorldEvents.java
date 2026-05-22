@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,6 +32,7 @@ import net.weyne1.randomcrafts.core.tier.TierCalculator;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
@@ -41,14 +43,14 @@ public class RandomCraftWorldEvents {
 
         CommandRegistrationEvent.EVENT.register((dispatcher, registry, selection) -> dispatcher.register(Commands.literal("rc")
                 .then(Commands.literal("generate")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                         .executes(context -> runGenerate(context, context.getSource().getLevel().getSeed()))
                         .then(Commands.argument("seed", LongArgumentType.longArg())
                                 .executes(context -> runGenerate(context, LongArgumentType.getLong(context, "seed")))
                         )
                 )
                 .then(Commands.literal("clear")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                         .executes(RandomCraftWorldEvents::runClear)
                 )
                 .then(Commands.literal("seed")
@@ -73,8 +75,9 @@ public class RandomCraftWorldEvents {
                 state.usedSeed = seed;
                 state.setDirty();
 
-                var rule = world.getGameRules().getRule(RandomCraftsGameRules.RANDOMIZE_CRAFTS);
-                if (!rule.get()) rule.set(true, null);
+                if (!world.getGameRules().get(RandomCraftsGameRules.RANDOMIZE_CRAFTS)) {
+                    world.getGameRules().set(RandomCraftsGameRules.RANDOMIZE_CRAFTS, true, null);
+                }
 
                 context.getSource().sendSuccess(() -> Component.translatable("message.random_crafts.generate_success",
                         Component.literal(String.valueOf(seed)).withStyle(ChatFormatting.GOLD)), true);
@@ -103,7 +106,7 @@ public class RandomCraftWorldEvents {
         File worldFolder = server.getWorldPath(LevelResource.ROOT).toFile();
 
         RandomCraftsDatapack.clear(worldFolder);
-        world.getGameRules().getRule(RandomCraftsGameRules.RANDOMIZE_CRAFTS).set(false, server);
+        world.getGameRules().set(RandomCraftsGameRules.RANDOMIZE_CRAFTS, false, server);
 
         RandomCraftsState state = RandomCraftsState.get(world);
         state.applied = false;
@@ -127,11 +130,11 @@ public class RandomCraftWorldEvents {
 
     private static void onServerStarted(MinecraftServer server) {
         ServerLevel world = server.overworld();
-        boolean enabled = world.getGameRules().getBoolean(RandomCraftsGameRules.RANDOMIZE_CRAFTS);
+        boolean enabled = world.getGameRules().get(RandomCraftsGameRules.RANDOMIZE_CRAFTS);
         RandomCraftsState state = RandomCraftsState.get(world);
 
         if (enabled && !state.applied) {
-            LOGGER.info("Applying RandomCraft for the first time via GameRule for world: {}", world.dimension().location());
+            LOGGER.info("Applying RandomCraft for the first time via GameRule for world: {}", world.dimension().identifier());
             long seed = world.getSeed();
             generateRandomCrafts(server, world, seed);
             state.applied = true;
@@ -196,9 +199,16 @@ public class RandomCraftWorldEvents {
 
         ItemStack result;
         if (recipe instanceof ShapedRecipe shaped) {
-            result = shaped.assemble(null, world.registryAccess());
+            int size = shaped.getWidth() * shaped.getHeight();
+            List<ItemStack> emptyItems = Stream.generate(() -> ItemStack.EMPTY)
+                    .limit(size)
+                    .toList();
+
+            CraftingInput emptyInput = CraftingInput.of(shaped.getWidth(), shaped.getHeight(), emptyItems);
+            result = shaped.assemble(emptyInput, world.registryAccess());
         } else if (recipe instanceof ShapelessRecipe shapeless) {
-            result = shapeless.assemble(null, world.registryAccess());
+            CraftingInput emptyInput = CraftingInput.of(1, 1, List.of(ItemStack.EMPTY));
+            result = shapeless.assemble(emptyInput, world.registryAccess());
         } else {
             return null;
         }
@@ -222,7 +232,7 @@ public class RandomCraftWorldEvents {
         }
 
         return new VanillaRecipeData(
-                holder.id().location().toString(),
+                holder.id().identifier().toString(),
                 result.getItem(),
                 result.getCount(),
                 recipeInputs,

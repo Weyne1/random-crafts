@@ -13,12 +13,6 @@ public class RandomCraftsState extends SavedData {
 
     public RandomCraftsState() { }
 
-    /*
-    * Теперь Minecraft сам разбирается, как читать данные, ранее был ручной NBT, что делало зоопарк, сейчас у них есть
-    * унифицированная штука, под названием Codec, что позволяет описать структуру один раз и использовать для любого формата.
-    * DataFixTypes - система миграции между версиями, то есть автоматическую миграцию сделает если изменится структура (как я понял)
-    * */
-
     public static final Codec<RandomCraftsState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.fieldOf("Applied").orElse(false).forGetter(s -> s.applied),
             Codec.LONG.fieldOf("UsedSeed").orElse(0L).forGetter(s -> s.usedSeed)
@@ -33,7 +27,7 @@ public class RandomCraftsState extends SavedData {
             "randomcrafts",
             RandomCraftsState::new,
             CODEC,
-            DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES // или любой подходящий DataFixTypes
+            DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES
     );
 
     public static RandomCraftsState get(ServerLevel level) {

@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.weyne1.randomcrafts.core.recipe.VanillaRecipeData;
 
 import java.util.*;
@@ -270,7 +270,7 @@ public class TierCalculator {
     );
 
     private static Integer detectAnchorTier(Item item) {
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
         String path = id.getPath().toLowerCase(Locale.ROOT);
 
         for (AnchorRule rule : ANCHOR_RULES) {
@@ -296,6 +296,7 @@ public class TierCalculator {
     /**
      * DEBUG-функция для вывода всей таблицы тиров
      */
+    @SuppressWarnings("unused")
     private static void logGroupedTiers(Map<Item, Integer> tiers) {
         Map<Integer, List<Item>> grouped = new TreeMap<>();
 
@@ -314,7 +315,7 @@ public class TierCalculator {
             ));
 
             for (Item item : itemsInTier) {
-                ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+                Identifier id = BuiltInRegistries.ITEM.getKey(item);
                 LOGGER.info(" - {}", id.getPath());
             }
         }
