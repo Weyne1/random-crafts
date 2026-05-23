@@ -6,6 +6,7 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/d4RW7cgE?label=Modrinth%20Downloads&color=00AF5C)](https://modrinth.com/mod/random-crafts)
 
 ### Versions
+[1.20.1](https://github.com/Weyne1/random-crafts/tree/1.20.1)
 [1.21.1](https://github.com/Weyne1/random-crafts/tree/1.21.1)
 [1.21.3](https://github.com/Weyne1/random-crafts/tree/1.21.3)
 [1.21.4](https://github.com/Weyne1/random-crafts/tree/1.21.4)
@@ -29,7 +30,9 @@ Change the settings in `gradle.properties`
 Build: `./gradlew build`  
 Build for a specific platform:
 * Fabric: `./gradlew :fabric:build`
-* Forge:  `./gradlew :neoforge:build`
+* Forge:  `./gradlew :forge:build`
+* NeoForge:  `./gradlew :neoforge:build`
+* Quilt:  `./gradlew :quilt:build`
 
 Force a build config check without building:  
 `./gradlew validateBuildConfig`
