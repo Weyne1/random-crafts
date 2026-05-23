@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "quilt_loader": {
+    "group": "${maven_group}",
+    "id": "random_crafts",
+    "version": "${mod_version}",
+    "metadata": {
+      "name": "Random Crafts",
+      "description": "Let's randomize crafts for each world! Let the chaos begin...",
+      "contributors": {
+        "Weyne1": "Owner"
+      },
+      "contact": {
+        "homepage": "https://modrinth.com/mod/random-crafts",
+        "sources": "https://github.com/Weyne1/random-crafts"
+      },
+      "icon": "icon.png"
+    },
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "entrypoints": {
+      "init": [
+        "net.weyne1.randomcrafts.quilt.RandomCraftsQuilt"
+      ]
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "version": ">=${quilt_loader_version}"
+      },
+      {
+        "id": "minecraft",
+        "version": "~${minecraft_version}"
+      },
+      {
+        "id": "architectury",
+        "version": ">=${architectury_api_version}"
+      }
+    ]
+  },
+  "mixin": [
+    "random_crafts.mixins.json"
+  ]
+}

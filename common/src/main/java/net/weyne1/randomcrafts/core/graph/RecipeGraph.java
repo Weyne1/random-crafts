@@ -58,6 +58,7 @@ public class RecipeGraph {
                 .toList();
     }
 
+    @SuppressWarnings("unused")
     public void printTree(String itemId, String indent, Set<String> visited) {
         CoreItem item = coreItemById.get(itemId);
         if (item == null) return;

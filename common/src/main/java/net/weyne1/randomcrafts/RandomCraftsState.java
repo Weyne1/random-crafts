@@ -1,6 +1,5 @@
 package net.weyne1.randomcrafts;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -10,11 +9,13 @@ public class RandomCraftsState extends SavedData {
     public boolean applied = false;
     public long usedSeed = 0;
 
+    public RandomCraftsState() { }
+
     public static RandomCraftsState get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(FACTORY, "randomcrafts");
+        return level.getDataStorage().computeIfAbsent(RandomCraftsState::load, RandomCraftsState::new, "randomcrafts");
     }
 
-    public static RandomCraftsState load(CompoundTag nbt, HolderLookup.Provider lookup) {
+    public static RandomCraftsState load(CompoundTag nbt) {
         RandomCraftsState state = new RandomCraftsState();
         state.applied = nbt.getBoolean("Applied");
         state.usedSeed = nbt.getLong("UsedSeed");
@@ -22,14 +23,9 @@ public class RandomCraftsState extends SavedData {
     }
 
     @Override
-    public @NotNull CompoundTag save(CompoundTag nbt, HolderLookup.Provider lookup) {
+    public @NotNull CompoundTag save(CompoundTag nbt) {
         nbt.putBoolean("Applied", applied);
         nbt.putLong("UsedSeed", usedSeed);
         return nbt;
     }
-
-    public static final SavedData.Factory<RandomCraftsState> FACTORY = new SavedData.Factory<>(
-            RandomCraftsState::new, RandomCraftsState::load, null
-    );
-    public RandomCraftsState() { }
 }

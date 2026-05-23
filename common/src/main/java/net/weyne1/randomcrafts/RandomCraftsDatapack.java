@@ -33,7 +33,7 @@ public class RandomCraftsDatapack {
 
         try {
             writePackMeta(datapackRoot);
-            File recipesFolder = new File(datapackRoot, "data/minecraft/recipe");
+            File recipesFolder = new File(datapackRoot, "data/minecraft/recipes");
 
             if (!recipesFolder.exists() && !recipesFolder.mkdirs()) {
                 LOGGER.error("Could not create recipe folder: {}", recipesFolder.getAbsolutePath());
@@ -108,7 +108,7 @@ public class RandomCraftsDatapack {
         }
 
         if (recipe.category() != null && !recipe.category().isEmpty()) {
-            json.put("category", recipe.category());
+            json.put("category", recipe.category().toLowerCase(Locale.ROOT));
         }
 
         if (recipe.isShapeless()) {
@@ -139,7 +139,7 @@ public class RandomCraftsDatapack {
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("id", outputId.toString());
+        result.put("item", outputId.toString());
         result.put("count", recipe.outputCount());
         json.put("result", result);
 

@@ -168,7 +168,7 @@ public class RecipeGenerator {
     );
 
     private static final Set<Class<? extends Block>> FUNCTIONAL_BLOCKS = Set.of(
-            AbstractFurnaceBlock.class, CraftingTableBlock.class, EnchantingTableBlock.class, CrafterBlock.class,
+            AbstractFurnaceBlock.class, CraftingTableBlock.class, EnchantmentTableBlock.class,
             AnvilBlock.class, SmithingTableBlock.class, LoomBlock.class, CartographyTableBlock.class,
             GrindstoneBlock.class, LecternBlock.class, StonecutterBlock.class, BrewingStandBlock.class,
             FletchingTableBlock.class, TrappedChestBlock.class, BeaconBlock.class, BarrelBlock.class

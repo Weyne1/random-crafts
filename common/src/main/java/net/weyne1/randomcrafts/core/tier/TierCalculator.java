@@ -1,6 +1,5 @@
 package net.weyne1.randomcrafts.core.tier;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
@@ -137,7 +136,7 @@ public class TierCalculator {
             Map.entry(ItemTags.PLANKS, 1),
             Map.entry(ItemTags.LOGS, 2),
             Map.entry(ItemTags.WOOL_CARPETS, 3),
-            Map.entry(ItemTags.MEAT, 5),
+            Map.entry(ItemTags.FOX_FOOD, 5),
             Map.entry(ItemTags.FISHES, 5),
             Map.entry(ItemTags.BEDS, 5),
             Map.entry(ItemTags.BOATS, 5),
@@ -155,7 +154,7 @@ public class TierCalculator {
             Map.entry(ItemTags.GOLD_ORES, 10),
             Map.entry(ItemTags.PIGLIN_FOOD, 11),
             Map.entry(ItemTags.DIAMOND_ORES, 13),
-            Map.entry(ItemTags.SKULLS, 13),
+            Map.entry(ItemTags.DECORATED_POT_SHERDS, 13),
             Map.entry(ItemTags.CREEPER_DROP_MUSIC_DISCS, 14),
             Map.entry(ItemTags.TRIM_TEMPLATES, 15)
     );
@@ -278,7 +277,7 @@ public class TierCalculator {
     }
 
     private static Integer detectRarityTier(Item item) {
-        Rarity rarity = item.components().getOrDefault(DataComponents.RARITY, Rarity.COMMON);
+        Rarity rarity = item.getRarity(item.getDefaultInstance());
 
         return switch (rarity) {
             case COMMON -> 0;
@@ -291,6 +290,7 @@ public class TierCalculator {
     /**
      * DEBUG-функция для вывода всей таблицы тиров
      */
+    @SuppressWarnings("unused")
     private static void logGroupedTiers(Map<Item, Integer> tiers) {
         Map<Integer, List<Item>> grouped = new TreeMap<>();
 

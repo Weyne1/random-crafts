@@ -10,6 +10,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -148,9 +149,10 @@ public class RandomCraftWorldEvents {
         // Извлечение данных (Vanilla -> Внутренний формат мода)
         LOGGER.info("Extracting original recipes...");
         List<VanillaRecipeData> vanillaRecipes = world.getRecipeManager()
-                .getAllRecipesFor(RecipeType.CRAFTING)
+                .getRecipes()
                 .stream()
-                .map(holder -> convertToVanillaData(holder, world))
+                .filter(recipe -> recipe.getType() == RecipeType.CRAFTING)
+                .map(recipe -> convertToVanillaData(recipe.getId(), (CraftingRecipe) recipe, world))
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(VanillaRecipeData::id))
                 .toList();
@@ -186,13 +188,11 @@ public class RandomCraftWorldEvents {
     /**
      * Превращает технический рецепт Minecraft в простые данные.
      */
-    private static VanillaRecipeData convertToVanillaData(RecipeHolder<CraftingRecipe> holder, ServerLevel world) {
-        CraftingRecipe recipe = holder.value();
+    private static VanillaRecipeData convertToVanillaData(ResourceLocation id, CraftingRecipe recipe, ServerLevel world) {
         ItemStack result = recipe.getResultItem(world.registryAccess());
         CraftingBookCategory category = recipe.category();
-        String categoryName = category.getSerializedName();
-
-        if (result.isEmpty() || result.is(Items.AIR)) return null;
+        String categoryName = category.name();
+        if (result.isEmpty() || result.getItem() == Items.AIR) return null;
 
         List<String> patternLayout = new ArrayList<>();
         List<Item> recipeInputs = new ArrayList<>();
@@ -209,7 +209,7 @@ public class RandomCraftWorldEvents {
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 
-        return new VanillaRecipeData(holder.id().toString(), result.getItem(), result.getCount(),
+        return new VanillaRecipeData(id.toString(), result.getItem(), result.getCount(),
                 recipeInputs, isShapeless, patternLayout, categoryName);
     }
 
