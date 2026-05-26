@@ -127,7 +127,6 @@ public class TierCalculator {
     }
 
     // Правила тиров
-
     private static final Map<TagKey<Item>, Integer> ITEM_TAG_WEIGHTS = Map.ofEntries(
             Map.entry(ItemTags.VILLAGER_PLANTABLE_SEEDS, 0),
             Map.entry(ItemTags.DIRT, 0),
@@ -156,7 +155,6 @@ public class TierCalculator {
             Map.entry(ItemTags.REDSTONE_ORES, 10),
             Map.entry(ItemTags.LAPIS_ORES, 10),
             Map.entry(ItemTags.GOLD_ORES, 10),
-            Map.entry(ItemTags.PIGLIN_FOOD, 11),
             Map.entry(ItemTags.DIAMOND_ORES, 13),
             Map.entry(ItemTags.SKULLS, 13),
             Map.entry(ItemTags.CREEPER_DROP_MUSIC_DISCS, 14),

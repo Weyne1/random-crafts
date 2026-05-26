@@ -169,11 +169,15 @@ public class RecipeGenerator {
             ProjectileWeaponItem.class, FishingRodItem.class, BrushItem.class, ShieldItem.class, ShearsItem.class
     );
 
-    private static final Set<Class<? extends Block>> FUNCTIONAL_BLOCKS = Set.of(
-            AbstractFurnaceBlock.class, CraftingTableBlock.class, EnchantingTableBlock.class, CrafterBlock.class,
-            AnvilBlock.class, SmithingTableBlock.class, LoomBlock.class, CartographyTableBlock.class,
-            GrindstoneBlock.class, LecternBlock.class, StonecutterBlock.class, BrewingStandBlock.class,
-            FletchingTableBlock.class, TrappedChestBlock.class, BeaconBlock.class, BarrelBlock.class
+    private static final Set<Class<? extends Block>> FUNCTIONAL_CLASSES = Set.of(
+            AbstractFurnaceBlock.class, AnvilBlock.class, CraftingTableBlock.class,
+            EnchantingTableBlock.class, CrafterBlock.class, BaseEntityBlock.class, BedBlock.class
+    );
+
+    private static final Set<Block> SPECIFIC_FUNCTIONAL_BLOCKS = Set.of(
+            Blocks.FLETCHING_TABLE, Blocks.SMITHING_TABLE, Blocks.LOOM,
+            Blocks.CARTOGRAPHY_TABLE, Blocks.GRINDSTONE,
+            Blocks.LECTERN, Blocks.STONECUTTER, Blocks.BARREL
     );
 
     // --- Вспомогательные проверки ---
@@ -198,9 +202,21 @@ public class RecipeGenerator {
 
     private boolean isFunctionalBlock(Item item) {
         if (item instanceof BlockItem blockItem) {
-            return FUNCTIONAL_BLOCKS.stream().anyMatch(clazz -> clazz.isInstance(blockItem.getBlock())) || item instanceof BedItem;
+            Block block = blockItem.getBlock();
+
+            if (SPECIFIC_FUNCTIONAL_BLOCKS.contains(block)) {
+                return true;
+            }
+
+            Class<? extends Block> blockClass = block.getClass();
+            for (Class<? extends Block> functionalClass : FUNCTIONAL_CLASSES) {
+                if (functionalClass.isAssignableFrom(blockClass)) {
+                    return true;
+                }
+            }
         }
-        return false;
+
+        return item instanceof BedItem;
     }
 
     private boolean isColorVariant(Item item) {
