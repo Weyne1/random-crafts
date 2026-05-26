@@ -13,6 +13,8 @@
   "gamerule.rcExcludeFunctionalBlocks.description": "Crafting tables, furnaces and other functional blocks will not be used as ingredients.",
   "gamerule.rcTierSpread": "[RC] Random Spread",
   "gamerule.rcTierSpread.description": "[1-20] Higher values increase the chance that end-game items will require basic materials. Only works when 'Balanced Tiers' is enabled.",
+  "gamerule.rcDynamicDiscovery": "[RC] Dynamic Recipe Discovery",
+  "gamerule.rcDynamicDiscovery.description": "If enabled, recipes unlock based on the randomized ingredients. If disabled, recipes unlock based on original vanilla item dependencies.",
   "message.random_crafts.short_generate_started": "[Random Crafts] Starting generation... Please wait.",
   "message.random_crafts.generate_started": "[Random Crafts] Cleaning up and reloading base recipes... Please wait.",
   "message.random_crafts.generate_success": "[Random Crafts] Successfully generated recipes with seed: %s! Reloading world...",
