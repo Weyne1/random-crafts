@@ -38,7 +38,7 @@ import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 public class RandomCraftWorldEvents {
 
     public static void init() {
-        LifecycleEvent.SERVER_STARTED.register(RandomCraftWorldEvents::onServerStarted);
+        LifecycleEvent.SERVER_STARTING.register(RandomCraftWorldEvents::onServerStarted);
 
         CommandRegistrationEvent.EVENT.register((dispatcher, registry, selection) -> dispatcher.register(Commands.literal("rc")
                 .then(Commands.literal("generate")
