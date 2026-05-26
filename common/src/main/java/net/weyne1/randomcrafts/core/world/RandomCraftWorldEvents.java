@@ -145,6 +145,8 @@ public class RandomCraftWorldEvents {
         GenerationSettings settings = GenerationSettings.fromWorld(world);
         File worldFolder = server.getWorldPath(LevelResource.ROOT).toFile();
 
+        boolean generateUnlocks = world.getGameRules().getBoolean(RandomCraftsGameRules.DYNAMIC_DISCOVERY);
+
         // Извлечение данных (Vanilla -> Внутренний формат мода)
         LOGGER.info("Extracting original recipes...");
         List<VanillaRecipeData> vanillaRecipes = world.getRecipeManager()
@@ -180,7 +182,7 @@ public class RandomCraftWorldEvents {
         LOGGER.info("Successfully randomized {} recipes using seed {}", randomizedRecipes.size(), seed);
 
         // Сохранение в датапак
-        RandomCraftsDatapack.generate(worldFolder, graph);
+        RandomCraftsDatapack.generate(worldFolder, graph, generateUnlocks);
     }
 
     /**
@@ -192,7 +194,7 @@ public class RandomCraftWorldEvents {
         CraftingBookCategory category = recipe.category();
         String categoryName = category.getSerializedName();
 
-        if (result.isEmpty() || result.is(Items.AIR)) return null;
+        if (result.isEmpty()) return null;
 
         List<String> patternLayout = new ArrayList<>();
         List<Item> recipeInputs = new ArrayList<>();
