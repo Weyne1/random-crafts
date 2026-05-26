@@ -13,8 +13,7 @@ public class RandomCraftsGameRules {
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_COLOR_BLOCKS;
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_TOOLS_ARMOR;
     public static GameRules.Key<GameRules.BooleanValue> EXCLUDE_FUNCTIONAL_BLOCKS;
-
-    // Новое правило для разброса тиров
+    public static GameRules.Key<GameRules.BooleanValue> DYNAMIC_DISCOVERY;
     public static GameRules.Key<GameRules.IntegerValue> TIER_SPREAD;
 
     public static void init() {
@@ -23,6 +22,7 @@ public class RandomCraftsGameRules {
         EXCLUDE_COLOR_BLOCKS = register("rcExcludeColorBlocks", true);
         EXCLUDE_TOOLS_ARMOR = register("rcExcludeToolsArmor", true);
         EXCLUDE_FUNCTIONAL_BLOCKS = register("rcExcludeFunctionalBlocks", true);
+        DYNAMIC_DISCOVERY = register("rcDynamicDiscovery", true);
         TIER_SPREAD = register();
     }
 
