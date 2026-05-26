@@ -15,6 +15,7 @@ public class RandomCraftsGameRules {
     public static GameRule<Boolean> EXCLUDE_COLOR_BLOCKS;
     public static GameRule<Boolean> EXCLUDE_TOOLS_ARMOR;
     public static GameRule<Boolean> EXCLUDE_FUNCTIONAL_BLOCKS;
+    public static GameRule<Boolean> DYNAMIC_DISCOVERY;
     public static GameRule<Integer> TIER_SPREAD;
 
     public static void init() {
@@ -23,6 +24,7 @@ public class RandomCraftsGameRules {
         EXCLUDE_COLOR_BLOCKS = GameRules.registerBoolean("rc_exclude_color_blocks", GameRuleCategory.MISC, true);
         EXCLUDE_TOOLS_ARMOR = GameRules.registerBoolean("rc_exclude_tools_armor", GameRuleCategory.MISC, true);
         EXCLUDE_FUNCTIONAL_BLOCKS = GameRules.registerBoolean("rc_exclude_functional_blocks", GameRuleCategory.MISC, true);
+        DYNAMIC_DISCOVERY = GameRules.registerBoolean("rc_dynamic_discovery", GameRuleCategory.MISC, true);
         TIER_SPREAD = GameRules.registerInteger("rc_tier_spread", GameRuleCategory.MISC, 4, 1, 20);
     }
 

@@ -13,6 +13,8 @@
   "gamerule.minecraft.rc_exclude_functional_blocks.description": "Верстаки, печки и прочие функциональные блоки не будут ингредиентами в рецептах.",
   "gamerule.minecraft.rc_tier_spread": "[RC] Разброс рандома",
   "gamerule.minecraft.rc_tier_spread.description": "[1-20] Чем выше это значение, тем больше шанс на то, что элитные вещи могут потребовать грязь. Работает только с включенным правилом 'Соблюдать баланс'.",
+  "gamerule.minecraft.rc_dynamic_discovery": "[RC] Динамическое открытие рецептов",
+  "gamerule.minecraft.rc_dynamic_discovery.description": "Если включено, рецепты открываются на основе рандомизированных ингредиентов. Если выключено, используются ванильные зависимости предметов.",
   "message.random_crafts.short_generate_started": "[Random Crafts] Запуск генерации... Пожалуйста, подождите.",
   "message.random_crafts.generate_started": "[Random Crafts] Очистка и подготовка базовых рецептов... Пожалуйста, подождите.",
   "message.random_crafts.generate_success": "[Random Crafts] Рецепты успешно созданы с сидом: %s! Перезагрузка...",

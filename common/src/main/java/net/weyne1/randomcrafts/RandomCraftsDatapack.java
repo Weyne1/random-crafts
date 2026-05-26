@@ -9,21 +9,23 @@ import net.weyne1.randomcrafts.build.DatapackBuildInfo;
 import net.weyne1.randomcrafts.core.graph.RecipeGraph;
 import net.weyne1.randomcrafts.core.item.CoreItem;
 import net.weyne1.randomcrafts.core.recipe.CoreRecipe;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
 public class RandomCraftsDatapack {
     private static final String DATAPACK_NAME = DatapackBuildInfo.datapackName();
 
-    public static void generate(File worldFolder, RecipeGraph graph) {
+    public static void generate(File worldFolder, RecipeGraph graph, boolean generateUnlocks) {
         File datapackRoot = new File(worldFolder, "datapacks/" + DATAPACK_NAME);
-        // Очистка старого содержимого
+        // Очистка старого датапака
         clear(worldFolder);
 
         if (!datapackRoot.exists() && !datapackRoot.mkdirs()) {
@@ -33,16 +35,21 @@ public class RandomCraftsDatapack {
 
         try {
             writePackMeta(datapackRoot);
-            File recipesFolder = new File(datapackRoot, "data/minecraft/recipe");
+            File advancementsFolder = new File(datapackRoot, "data/custom/advancement");
 
-            if (!recipesFolder.exists() && !recipesFolder.mkdirs()) {
-                LOGGER.error("Could not create recipe folder: {}", recipesFolder.getAbsolutePath());
+            if (generateUnlocks && !advancementsFolder.exists() && !advancementsFolder.mkdirs()) {
+                LOGGER.error("Could not create advancement folder");
                 return;
             }
 
             for (CoreRecipe recipe : graph.getAllRecipes()) {
                 if (recipe.inputs().isEmpty()) continue;
-                writeRecipeJson(recipe, recipesFolder);
+
+                writeRecipeJson(recipe, datapackRoot);
+
+                if (generateUnlocks) {
+                    writeAdvancementJson(recipe, advancementsFolder);
+                }
             }
         } catch (Exception e) {
             LOGGER.error("Datapack generation failed", e);
@@ -91,14 +98,12 @@ public class RandomCraftsDatapack {
         }
     }
 
-    private static void writeRecipeJson(CoreRecipe recipe, File recipesFolder) {
+    private static void writeRecipeJson(CoreRecipe recipe, File datapackRoot) {
         Item outputItem = recipe.output().vanillaItem();
         if (outputItem == Items.AIR) return;
 
         Identifier outputId = BuiltInRegistries.ITEM.getKey(outputItem);
-        String raw = recipe.id();
-        String fileName = (raw.contains(":") ? raw.split(":")[1] : raw) + ".json";
-        File file = new File(recipesFolder, fileName);
+        File file = getFile(recipe, datapackRoot);
 
         Map<String, Object> json = new LinkedHashMap<>();
 
@@ -149,7 +154,83 @@ public class RandomCraftsDatapack {
         try (Writer writer = new FileWriter(file)) {
             new GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
         } catch (IOException e) {
-            LOGGER.error("Failed to write recipe {}", fileName, e);
+            LOGGER.error("Failed to write recipe {}", file.getName(), e);
+        }
+    }
+
+    private static @NotNull File getFile(CoreRecipe recipe, File datapackRoot) {
+        String raw = recipe.id();
+
+        // Разделяем ID на namespace и path
+        String namespace = "minecraft";
+        String path = raw;
+        if (raw.contains(":")) {
+            String[] parts = raw.split(":", 2);
+            namespace = parts[0];
+            path = parts[1];
+        }
+
+        // Динамический путь: data/<namespace>/recipe/<path>.json
+        File file = new File(datapackRoot, "data/" + namespace + "/recipe/" + path + ".json");
+
+        // Создаём подпапки мода, если их нет
+        File parent = file.getParentFile();
+        if (parent != null && !parent.mkdirs() && !parent.exists()) {
+            LOGGER.error("Failed to create subdirectory {}", parent.getAbsolutePath());
+        }
+
+        return file;
+    }
+
+
+    private static void writeAdvancementJson(CoreRecipe recipe, File advancementsFolder) {
+        String raw = recipe.id();
+        String path = raw.contains(":") ? raw.split(":", 2)[1] : raw;
+        String fileName = "unlock_" + path + ".json";
+        File file = new File(advancementsFolder, fileName);
+
+        // Создаем подпапки внутри папки advancements
+        File parent = file.getParentFile();
+        if (parent != null && !parent.mkdirs() && !parent.exists()) {
+            LOGGER.error("Failed to create advancement subdirectory: {}", parent.getAbsolutePath());
+        }
+
+        // Получаем уникальные предметы, нужные для крафта
+        Set<String> uniqueInputs = recipe.inputs().stream()
+                .map(ci -> BuiltInRegistries.ITEM.getKey(ci.vanillaItem()).toString())
+                .collect(Collectors.toSet());
+
+        if (uniqueInputs.isEmpty()) return;
+
+        Map<String, Object> json = new LinkedHashMap<>();
+        Map<String, Object> criteria = new LinkedHashMap<>();
+        List<String> requirementsList = new ArrayList<>();
+
+        int index = 0;
+        for (String inputId : uniqueInputs) {
+            String critName = "has_item_" + index++;
+            requirementsList.add(critName);
+
+            // Формируем структуру предиката предмета
+            Map<String, Object> conditionItem = Map.of("items", inputId);
+            Map<String, Object> conditions = Map.of("items", List.of(conditionItem));
+
+            criteria.put(critName, Map.of(
+                    "trigger", "minecraft:inventory_changed",
+                    "conditions", conditions
+            ));
+        }
+
+        json.put("criteria", criteria);
+        json.put("requirements", List.of(requirementsList));
+
+        String recipeId = raw.contains(":") ? raw : "minecraft:" + raw;
+        json.put("rewards", Map.of("recipes", List.of(recipeId)));
+
+        try (Writer writer = new FileWriter(file)) {
+            new GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write advancement {}", fileName, e);
         }
     }
 }
