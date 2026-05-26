@@ -13,6 +13,7 @@ description = '''
 Let's randomize crafts for each world! Let the chaos begin...
 '''
 logoFile = "icon.png"
+displayTest = "IGNORE_ALL_VERSION"
 
 [[dependencies.random_crafts]]
 modId = "neoforge"
