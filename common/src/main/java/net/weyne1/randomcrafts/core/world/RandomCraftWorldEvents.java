@@ -148,7 +148,7 @@ public class RandomCraftWorldEvents {
         GenerationSettings settings = GenerationSettings.fromWorld(world);
         File worldFolder = server.getWorldPath(LevelResource.ROOT).toFile();
 
-        boolean generateUnlocks = world.getGameRules().get(RandomCraftsGameRules.RANDOMIZE_CRAFTS);
+        boolean generateUnlocks = world.getGameRules().get(RandomCraftsGameRules.DYNAMIC_DISCOVERY);
 
         // Извлечение данных (Vanilla -> Внутренний формат мода)
         LOGGER.info("Extracting original recipes...");
