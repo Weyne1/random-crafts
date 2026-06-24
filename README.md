@@ -18,7 +18,7 @@
 ## Updating / Downgrading Versions
 
 > [!IMPORTANT]
-> Before updating, check if the version you need is available at https://parchmentmc.org/docs/getting-started
+> Before updating, check if the version you need is available at https://parchmentmc.org/docs/getting-started (for MC versions below 26.x)
 
 Change the settings in `gradle.properties`
 * `minecraft_version` in `gradle.properties`
