@@ -9,6 +9,7 @@ public record GenerationSettings(
         boolean excludeColors,
         boolean excludeTools,
         boolean excludeFunctional,
+        boolean dynamicDiscovery,
         int tierSpread
 ) {
     public static GenerationSettings fromWorld(ServerLevel world) {
@@ -21,6 +22,7 @@ public record GenerationSettings(
                 rules.getBoolean(RandomCraftsGameRules.EXCLUDE_COLOR_BLOCKS),
                 rules.getBoolean(RandomCraftsGameRules.EXCLUDE_TOOLS_ARMOR),
                 rules.getBoolean(RandomCraftsGameRules.EXCLUDE_FUNCTIONAL_BLOCKS),
+                rules.getBoolean(RandomCraftsGameRules.DYNAMIC_DISCOVERY),
                 clampedSpread
         );
     }
