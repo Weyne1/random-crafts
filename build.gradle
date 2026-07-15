@@ -62,7 +62,7 @@ tasks.register('validateBuildConfig') {
         int packFormat
         try {
             packFormat = Integer.parseInt(rawPackFormat)
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
             throw new GradleException("Property 'mc_pack_format' must be an integer, got: '${rawPackFormat}'.")
         }
 
@@ -129,6 +129,17 @@ subprojects {
 
     loom {
         silentMojangMappingsLicense()
+
+        runs {
+            client {
+                client()
+                property "randomcrafts.debug", "true"
+            }
+            server {
+                server()
+                property "randomcrafts.debug", "true"
+            }
+        }
     }
 
     dependencies {

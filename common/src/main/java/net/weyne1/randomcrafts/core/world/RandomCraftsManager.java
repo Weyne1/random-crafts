@@ -15,10 +15,7 @@ import net.weyne1.randomcrafts.core.recipe.VanillaRecipeData;
 import net.weyne1.randomcrafts.core.tier.TierCalculator;
 
 import java.io.File;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 

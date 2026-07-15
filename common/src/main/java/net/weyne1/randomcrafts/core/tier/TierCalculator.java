@@ -4,6 +4,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.weyne1.randomcrafts.core.recipe.VanillaRecipeData;
+import net.weyne1.randomcrafts.core.util.Debug;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +40,11 @@ public class TierCalculator {
 
         Map<Item, Integer> tiers = initializeBaseTiers(allItems, vanillaRecipes, locked);
         propagateTiers(graph, tiers, locked);
-        //logGroupedTiers(tiers);
+
+        if (Debug.IS_DEV) {
+            logGroupedTiers(tiers);
+        }
+
         return tiers;
     }
 
@@ -125,9 +130,6 @@ public class TierCalculator {
         } while (changed);
     }
 
-    /**
-     * DEBUG-функция для вывода всей таблицы тиров
-     */
     private static void logGroupedTiers(Map<Item, Integer> tiers) {
         Map<Integer, List<Item>> grouped = new TreeMap<>();
 
