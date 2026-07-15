@@ -275,6 +275,7 @@ public class TierCalculator {
         return null;
     }
 
+    @SuppressWarnings("UnnecessaryDefault")
     private static Integer detectRarityTier(Item item) {
         Rarity rarity = item.components().getOrDefault(DataComponents.RARITY, Rarity.COMMON);
 
@@ -283,6 +284,10 @@ public class TierCalculator {
             case UNCOMMON -> 7;
             case RARE -> 10;
             case EPIC -> 14;
+            default -> {
+                int rarityWeight = rarity.ordinal();
+                yield 14 + ((rarityWeight - 3) * 4);
+            }
         };
     }
 
