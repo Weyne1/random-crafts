@@ -60,9 +60,9 @@ public class RandomCraftsDatapack {
         File datapackRoot = new File(worldFolder, "datapacks/" + DATAPACK_NAME);
         if (datapackRoot.exists()) {
             if (deleteDirectory(datapackRoot)) {
-                LOGGER.info("Datapack '{}' successfully removed", DATAPACK_NAME);
+                LOGGER.info("[RC] Datapack '{}' successfully removed", DATAPACK_NAME);
             } else {
-                LOGGER.warn("Failed to fully remove datapack '{}'. Some files might remain.", DATAPACK_NAME);
+                LOGGER.warn("[RC] Failed to fully remove datapack '{}'. Some files might remain.", DATAPACK_NAME);
             }
         }
     }

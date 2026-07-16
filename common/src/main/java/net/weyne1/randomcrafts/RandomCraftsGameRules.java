@@ -38,7 +38,7 @@ public class RandomCraftsGameRules {
 
             if (current != clamped) {
                 value.set(clamped, null);
-                LOGGER.info("GameRule {} was out of range (1-20). Clamped to {}", "rcTierSpread", clamped);
+                LOGGER.warn("[RC] Gamerule {} was out of range (1-20). Clamped to {}", "rcTierSpread", clamped);
             }
 
             broadcastChange(server, "rcTierSpread", String.valueOf(value.get()));
@@ -57,7 +57,7 @@ public class RandomCraftsGameRules {
                 }
             });
 
-            LOGGER.info("GameRule {} changed to {}", name, newValue);
+            LOGGER.info("[RC] Gamerule {} changed to {}", name, newValue);
         }
     }
 }

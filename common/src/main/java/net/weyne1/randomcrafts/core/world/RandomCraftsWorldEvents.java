@@ -68,7 +68,7 @@ public class RandomCraftsWorldEvents {
             context.getSource().sendSuccess(() -> Component.translatable("message.random_crafts.generate_success",
                     Component.literal(String.valueOf(seed)).withStyle(ChatFormatting.GOLD)), true);
 
-            LOGGER.info("RandomCrafts generation took: {} ms", durationMillis);
+            LOGGER.info("[RC] RandomCrafts generation took: {} ms", durationMillis);
 
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "reload");
         };
@@ -119,7 +119,7 @@ public class RandomCraftsWorldEvents {
         RandomCraftsState state = RandomCraftsState.get(world);
 
         if (enabled && !state.applied) {
-            LOGGER.info("Applying RandomCraft for the first time via GameRule for world: {}", world.dimension().location());
+            LOGGER.info("[RC] Applying RandomCrafts for the first time via gamerule for world: {}", world.dimension().location());
             long seed = world.getSeed();
 
             RandomCraftsManager.generateRandomCrafts(server, world, seed);

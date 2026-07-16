@@ -25,7 +25,7 @@ public class RandomCraftsManager {
         GenerationSettings settings = GenerationSettings.fromWorld(world);
         File worldFolder = server.getWorldPath(LevelResource.ROOT).toFile();
 
-        LOGGER.info("Extracting original recipes...");
+        LOGGER.info("[RC] Extracting original recipes...");
         List<VanillaRecipeData> vanillaRecipes = world.getRecipeManager()
                 .getAllRecipesFor(RecipeType.CRAFTING)
                 .stream()
@@ -34,7 +34,7 @@ public class RandomCraftsManager {
                 .sorted(Comparator.comparing(VanillaRecipeData::id))
                 .toList();
 
-        LOGGER.info("Extracted {} recipes for shuffle pool", vanillaRecipes.size());
+        LOGGER.info("[RC] Extracted {} recipes for shuffle pool", vanillaRecipes.size());
 
         RecipeGraph graph = CoreGraphBuilder.build(vanillaRecipes);
         applyTiersToGraph(graph, vanillaRecipes);
@@ -49,7 +49,7 @@ public class RandomCraftsManager {
 
         randomizedRecipes.forEach(graph::addRecipe);
 
-        LOGGER.info("Successfully randomized {} recipes using seed {}", randomizedRecipes.size(), seed);
+        LOGGER.info("[RC] Successfully randomized {} recipes using seed {}", randomizedRecipes.size(), seed);
         RandomCraftsDatapack.generate(worldFolder, graph, settings.dynamicDiscovery());
     }
 
