@@ -1,13 +1,11 @@
 package net.weyne1.randomcrafts.core.tier;
 
-import net.minecraft.world.item.*;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.*;
 import net.weyne1.randomcrafts.core.recipe.VanillaRecipeData;
 import net.weyne1.randomcrafts.core.util.Debug;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
@@ -22,23 +20,24 @@ public class TierCalculator {
     );
 
     public static Map<Item, Integer> calculateTier(List<VanillaRecipeData> vanillaRecipes) {
-        Map<Item, Set<Item>> graph = buildGraph(vanillaRecipes);
-        Set<Item> locked = new HashSet<>();
-        Set<Item> allItems = new HashSet<>();
+        Map<Item, Set<Item>> graph = new HashMap<>(vanillaRecipes.size());
+        Set<Item> allItems = new HashSet<>(vanillaRecipes.size() * 2);
+        Set<Item> hasRecipe = new HashSet<>(vanillaRecipes.size());
 
         for (VanillaRecipeData vr : vanillaRecipes) {
-            allItems.add(vr.output());
-            allItems.addAll(vr.inputs());
+            Item output = vr.output();
+            allItems.add(output);
+            hasRecipe.add(output);
+
+            Set<Item> inputs = graph.computeIfAbsent(output, k -> new HashSet<>());
+            for (Item input : vr.inputs()) {
+                allItems.add(input);
+                inputs.add(input);
+            }
         }
 
-        Set<Item> graphItems = new HashSet<>();
-        for (var e : graph.entrySet()) {
-            graphItems.add(e.getKey());
-            graphItems.addAll(e.getValue());
-        }
-        allItems.addAll(graphItems);
-
-        Map<Item, Integer> tiers = initializeBaseTiers(allItems, vanillaRecipes, locked);
+        Set<Item> locked = new HashSet<>();
+        Map<Item, Integer> tiers = initializeBaseTiers(allItems, hasRecipe, locked);
         propagateTiers(graph, tiers, locked);
 
         if (Debug.IS_DEV) {
@@ -48,43 +47,27 @@ public class TierCalculator {
         return tiers;
     }
 
-    private static Map<Item, Set<Item>> buildGraph(List<VanillaRecipeData> vanillaRecipes) {
-        Comparator<Item> itemComparator = Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString());
-
-        Map<Item, Set<Item>> graph = new LinkedHashMap<>();
-
-        for (VanillaRecipeData vr : vanillaRecipes) {
-            if (!graph.containsKey(vr.output())) {
-                graph.put(vr.output(), new TreeSet<>(itemComparator));
-            }
-            graph.get(vr.output()).addAll(vr.inputs());
-        }
-        return graph;
-    }
-
     private static Map<Item, Integer> initializeBaseTiers(
             Set<Item> allItems,
-            List<VanillaRecipeData> vanillaRecipes,
+            Set<Item> hasRecipe,
             Set<Item> locked
     ) {
-        Set<Item> hasRecipe = vanillaRecipes.stream()
-                .map(VanillaRecipeData::output)
-                .collect(Collectors.toSet());
-
-        Map<Item, Integer> tiers = new HashMap<>();
+        Map<Item, Integer> tiers = new HashMap<>(allItems.size());
 
         for (Item item : allItems) {
-            int base = RULES.stream()
-                    .map(rule -> rule.detectTier(item))
-                    .filter(OptionalInt::isPresent)
-                    .mapToInt(OptionalInt::getAsInt)
-                    .max()
-                    .orElse(-1);
+            int base = -1;
+
+            for (TierRule rule : RULES) {
+                OptionalInt detected = rule.detectTier(item);
+                if (detected.isPresent()) {
+                    base = Math.max(base, detected.getAsInt());
+                }
+            }
 
             if (base != -1) {
                 tiers.put(item, base);
                 locked.add(item);
-            } else if (hasRecipe.contains(item)) {
+            } else if (!hasRecipe.contains(item)) {
                 tiers.put(item, 0);
             }
         }
@@ -92,7 +75,10 @@ public class TierCalculator {
         return tiers;
     }
 
-    private static void propagateTiers(Map<Item, Set<Item>> graph, Map<Item, Integer> tiers, Set<Item> locked)
+    private static void propagateTiers(
+            Map<Item, Set<Item>> graph,
+            Map<Item, Integer> tiers,
+            Set<Item> locked)
     {
         boolean changed;
 
@@ -110,7 +96,7 @@ public class TierCalculator {
                 boolean allKnown = true;
 
                 for (Item in : e.getValue()) {
-                    int t = tiers.getOrDefault(in, 0);
+                    int t = tiers.getOrDefault(in, -1);
 
                     if (t == -1) {
                         allKnown = false;
@@ -142,14 +128,10 @@ public class TierCalculator {
             LOGGER.info("=== TIER {} ===", entry.getKey());
 
             List<Item> itemsInTier = entry.getValue();
-
-            itemsInTier.sort(Comparator.comparing(item ->
-                    BuiltInRegistries.ITEM.getKey(item).toString()
-            ));
+            itemsInTier.sort(Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString()));
 
             for (Item item : itemsInTier) {
-                ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-                LOGGER.info(" - {}", id.getPath());
+                LOGGER.info(" - {}", BuiltInRegistries.ITEM.getKey(item).getPath());
             }
         }
     }
