@@ -18,7 +18,7 @@ public class RarityRule implements TierRule {
             case EPIC -> 14;
             default -> {
                 int rarityWeight = rarity.ordinal();
-                yield 14 + ((rarityWeight - 3) * 4);
+                yield 14 + ((rarityWeight - 3));
             }
         };
         return OptionalInt.of(tier);
