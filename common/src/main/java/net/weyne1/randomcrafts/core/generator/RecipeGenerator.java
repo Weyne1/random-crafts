@@ -1,13 +1,11 @@
 package net.weyne1.randomcrafts.core.generator;
 
-import net.minecraft.world.item.Item;
 import net.weyne1.randomcrafts.core.generator.filter.*;
 import net.weyne1.randomcrafts.core.item.CoreItem;
 import net.weyne1.randomcrafts.core.recipe.CoreRecipe;
 import net.weyne1.randomcrafts.core.graph.RecipeGraph;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
@@ -16,8 +14,8 @@ public class RecipeGenerator {
     private final Random random;
     private final GenerationSettings settings;
     private final Set<String> usedFingerprints = new HashSet<>();
-    private final List<CoreItem> allPossibleIngredients;
-    private final List<ItemFilter> itemFilters = new ArrayList<>();
+    private final Map<Integer, List<CoreItem>> ingredientsByTier;
+
     private final List<CandidateFilter> candidateFilters = List.of(
             new SelfReferenceFilter(),
             new EnderEyeRuleFilter()
@@ -27,13 +25,27 @@ public class RecipeGenerator {
         this.graph = graph;
         this.random = new Random(seed);
         this.settings = settings;
-        this.allPossibleIngredients = graph.getCoreItemIdMap().values().stream()
-                .sorted(Comparator.comparing(CoreItem::id))
-                .toList();
 
+        List<ItemFilter> itemFilters = new ArrayList<>();
         if (settings.excludeTools()) itemFilters.add(new ToolAndArmorFilter());
         if (settings.excludeFunctional()) itemFilters.add(new FunctionalBlockFilter());
         if (settings.excludeColors()) itemFilters.add(new ColorVariantFilter());
+
+        this.ingredientsByTier = new HashMap<>();
+        for (CoreItem item : graph.getCoreItemIdMap().values()) {
+            boolean allowed = true;
+            for (ItemFilter filter : itemFilters) {
+                if (!filter.isAllowed(item.vanillaItem())) {
+                    allowed = false;
+                    break;
+                }
+            }
+            if (allowed) {
+                this.ingredientsByTier
+                        .computeIfAbsent(item.tier(), k -> new ArrayList<>())
+                        .add(item);
+            }
+        }
     }
 
     public CoreRecipe generateRandomRecipe(CoreRecipe original) {
@@ -42,11 +54,12 @@ public class RecipeGenerator {
         CoreItem output = graph.getCoreItemById(original.output().id());
         if (output == null) output = original.output();
 
-        List<String> uniqueIngredientIds = original.inputs().stream()
-                .map(CoreItem::id)
-                .distinct()
-                .sorted()
-                .toList();
+        List<CoreItem> originalInputs = original.inputs();
+        Set<String> uniqueIdsSet = new HashSet<>(originalInputs.size());
+        for (CoreItem ing : originalInputs) {
+            uniqueIdsSet.add(ing.id());
+        }
+        List<String> uniqueIngredientIds = new ArrayList<>(uniqueIdsSet);
 
         List<CoreItem> newInputsList;
         String fingerprint;
@@ -55,9 +68,10 @@ public class RecipeGenerator {
         do {
             Map<String, CoreItem> replacementMap = createReplacementMap(uniqueIngredientIds, output, attempts);
 
-            newInputsList = original.inputs().stream()
-                    .map(ing -> replacementMap.get(ing.id()))
-                    .toList();
+            newInputsList = new ArrayList<>(originalInputs.size());
+            for (CoreItem ing : originalInputs) {
+                newInputsList.add(replacementMap.get(ing.id()));
+            }
 
             fingerprint = getRecipeFingerprint(newInputsList);
             attempts++;
@@ -75,14 +89,11 @@ public class RecipeGenerator {
     }
 
     private Map<String, CoreItem> createReplacementMap(List<String> uniqueIds, CoreItem output, int bonusSpread) {
-        Map<String, CoreItem> map = new HashMap<>();
+        Map<String, CoreItem> map = new HashMap<>(uniqueIds.size());
+        List<CoreItem> candidates = findCandidatesFor(output, bonusSpread);
 
         for (String oldId : uniqueIds) {
-            List<CoreItem> candidates = findCandidatesFor(output, bonusSpread);
-
-            CoreItem chosen = candidates.isEmpty()
-                    ? graph.getCoreItemById(oldId)
-                    : candidates.get(random.nextInt(candidates.size()));
+            CoreItem chosen = candidates.isEmpty() ? graph.getCoreItemById(oldId) : candidates.get(random.nextInt(candidates.size()));
 
             map.put(oldId, chosen);
         }
@@ -110,14 +121,18 @@ public class RecipeGenerator {
             int currentMin = Math.max(0, minT - fallback);
             int currentMax = Math.max(currentMin, maxT);
 
-            List<CoreItem> found = allPossibleIngredients.stream()
-                    .filter(i -> {
-                        int iTier = i.tier();
-                        return iTier >= currentMin && iTier <= currentMax;
-                    })
-                    .filter(i -> isAllowedAsIngredient(i.vanillaItem()))
-                    .filter(i -> isAllowedCandidate(i, output))
-                    .toList();
+            List<CoreItem> found = new ArrayList<>();
+
+            for (int t = currentMin; t <= currentMax; t++) {
+                List<CoreItem> tierItems = ingredientsByTier.get(t);
+                if (tierItems == null) continue;
+
+                for (CoreItem item : tierItems) {
+                    if (isAllowedCandidate(item, output)) {
+                        found.add(item);
+                    }
+                }
+            }
 
             if (!found.isEmpty()) return found;
 
@@ -127,18 +142,25 @@ public class RecipeGenerator {
         return Collections.emptyList();
     }
 
-    private boolean isAllowedAsIngredient(Item item) {
-        return itemFilters.stream().allMatch(filter -> filter.isAllowed(item));
-    }
-
     private boolean isAllowedCandidate(CoreItem candidate, CoreItem output) {
-        return candidateFilters.stream().allMatch(filter -> filter.isAllowed(candidate, output));
+        for (CandidateFilter filter : candidateFilters) {
+            if (!filter.isAllowed(candidate, output)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String getRecipeFingerprint(List<CoreItem> inputs) {
-        return inputs.stream()
-                .map(CoreItem::id)
-                .sorted()
-                .collect(Collectors.joining(","));
+        int size = inputs.size();
+        if (size == 0) return "";
+
+        String[] ids = new String[size];
+        for (int i = 0; i < size; i++) {
+            ids[i] = inputs.get(i).id();
+        }
+        Arrays.sort(ids);
+
+        return String.join(",", ids);
     }
 }
