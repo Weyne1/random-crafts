@@ -1,9 +1,8 @@
 package net.weyne1.randomcrafts.core.world;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import dev.architectury.event.events.common.CommandRegistrationEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -21,10 +20,8 @@ import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
 public class RandomCraftsWorldEvents {
 
-    public static void init() {
-        LifecycleEvent.SERVER_STARTING.register(RandomCraftsWorldEvents::onServerStarted);
-
-        CommandRegistrationEvent.EVENT.register((dispatcher, registry, selection) -> dispatcher.register(Commands.literal("rc")
+    public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("rc")
                 .then(Commands.literal("generate")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> runGenerate(context, context.getSource().getLevel().getSeed()))
@@ -40,7 +37,11 @@ public class RandomCraftsWorldEvents {
                         .requires(source -> true)
                         .executes(RandomCraftsWorldEvents::runGetSeed)
                 )
-        ));
+        );
+    }
+
+    public static void handleServerStarted(MinecraftServer server) {
+        onServerStarted(server);
     }
 
     private static int runGenerate(CommandContext<CommandSourceStack> context, long seed) {

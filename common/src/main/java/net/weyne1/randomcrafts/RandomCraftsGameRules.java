@@ -4,8 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
-
-import static com.mojang.text2speech.Narrator.LOGGER;
+import java.util.function.BiConsumer;
+import static net.weyne1.randomcrafts.RandomCrafts.LOGGER;
 
 public class RandomCraftsGameRules {
     public static GameRules.Key<GameRules.BooleanValue> RANDOMIZE_CRAFTS;
@@ -16,36 +16,35 @@ public class RandomCraftsGameRules {
     public static GameRules.Key<GameRules.BooleanValue> DYNAMIC_DISCOVERY;
     public static GameRules.Key<GameRules.IntegerValue> TIER_SPREAD;
 
-    public static void init() {
-        RANDOMIZE_CRAFTS = register("randomizeCrafts", false);
-        BALANCED_TIERS = register("rcBalancedTiers", true);
-        EXCLUDE_COLOR_BLOCKS = register("rcExcludeColorBlocks", true);
-        EXCLUDE_TOOLS_ARMOR = register("rcExcludeToolsArmor", true);
-        EXCLUDE_FUNCTIONAL_BLOCKS = register("rcExcludeFunctionalBlocks", true);
-        DYNAMIC_DISCOVERY = register("rcDynamicDiscovery", true);
-        TIER_SPREAD = register();
+    public interface Registrar {
+        GameRules.Key<GameRules.BooleanValue> registerBoolean(String name, boolean defaultValue, BiConsumer<MinecraftServer, GameRules.BooleanValue> callback);
+        GameRules.Key<GameRules.IntegerValue> registerInteger(String name, int defaultValue, int min, int max, BiConsumer<MinecraftServer, GameRules.IntegerValue> callback);
     }
 
-    private static GameRules.Key<GameRules.BooleanValue> register(String name, boolean defaultValue) {
-        return GameRules.register(name, GameRules.Category.MISC, GameRules.BooleanValue.create(defaultValue, (server, value) ->
-                broadcastChange(server, name, String.valueOf(value.get()))));
+    public static void init(Registrar registrar) {
+        RANDOMIZE_CRAFTS = registrar.registerBoolean("randomizeCrafts", false, (server, value) ->
+                broadcastChange(server, "randomizeCrafts", String.valueOf(value.get())));
+
+        BALANCED_TIERS = registrar.registerBoolean("rcBalancedTiers", true, (server, value) ->
+                broadcastChange(server, "rcBalancedTiers", String.valueOf(value.get())));
+
+        EXCLUDE_COLOR_BLOCKS = registrar.registerBoolean("rcExcludeColorBlocks", true, (server, value) ->
+                broadcastChange(server, "rcExcludeColorBlocks", String.valueOf(value.get())));
+
+        EXCLUDE_TOOLS_ARMOR = registrar.registerBoolean("rcExcludeToolsArmor", true, (server, value) ->
+                broadcastChange(server, "rcExcludeToolsArmor", String.valueOf(value.get())));
+
+        EXCLUDE_FUNCTIONAL_BLOCKS = registrar.registerBoolean("rcExcludeFunctionalBlocks", true, (server, value) ->
+                broadcastChange(server, "rcExcludeFunctionalBlocks", String.valueOf(value.get())));
+
+        DYNAMIC_DISCOVERY = registrar.registerBoolean("rcDynamicDiscovery", true, (server, value) ->
+                broadcastChange(server, "rcDynamicDiscovery", String.valueOf(value.get())));
+
+        TIER_SPREAD = registrar.registerInteger("rcTierSpread", 4, 1, 20, (server, value) ->
+                broadcastChange(server, "rcTierSpread", String.valueOf(value.get())));
     }
 
-    private static GameRules.Key<GameRules.IntegerValue> register() {
-        return GameRules.register("rcTierSpread", GameRules.Category.MISC, GameRules.IntegerValue.create(4, (server, value) -> {
-            int current = value.get();
-            int clamped = Math.max(1, Math.min(20, current));
-
-            if (current != clamped) {
-                value.set(clamped, null);
-                LOGGER.warn("[RC] Gamerule {} was out of range (1-20). Clamped to {}", "rcTierSpread", clamped);
-            }
-
-            broadcastChange(server, "rcTierSpread", String.valueOf(value.get()));
-        }));
-    }
-
-    private static void broadcastChange(MinecraftServer server, String name, String newValue) {
+    public static void broadcastChange(MinecraftServer server, String name, String newValue) {
         if (server != null) {
             Component msg = Component.translatable("message.random_crafts.rule_changed",
                             Component.literal(name).withStyle(ChatFormatting.AQUA))

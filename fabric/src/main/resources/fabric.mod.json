@@ -9,17 +9,15 @@
   ],
   "contact": {
     "homepage": "https://modrinth.com/mod/random-crafts",
-    "sources": "https://github.com/Weyne1/random-crafts"
+    "sources": "https://github.com/Weyne1/random-crafts",
+    "issues": "https://github.com/Weyne1/EaseGUI/issues"
   },
   "license": "MIT",
   "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.weyne1.randomcrafts.fabric.RandomCrafts"
-    ],
-    "client": [
-      "net.weyne1.randomcrafts.fabric.client.RandomCraftsFabricClient"
+      "net.weyne1.randomcrafts.fabric.RandomCraftsFabric"
     ]
   },
   "mixins": [
@@ -29,7 +27,6 @@
     "fabricloader": ">=${fabric_loader_version}",
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
-    "architectury": ">=${architectury_api_version}",
     "fabric-api": ">=${fabric_api_version}"
   },
   "suggests": {
