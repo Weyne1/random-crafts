@@ -51,7 +51,11 @@ public class RandomCraftsWorldEvents {
         boolean hasPreviousData = RandomCraftsDatapack.exists(worldFolder);
 
         Runnable generationTask = () -> {
+            long startTime = System.nanoTime();
+
             RandomCraftsManager.generateRandomCrafts(server, world, seed);
+
+            double durationMillis = (System.nanoTime() - startTime) / 1_000_000.0;
 
             RandomCraftsState state = RandomCraftsState.get(world);
             state.applied = true;
@@ -63,6 +67,8 @@ public class RandomCraftsWorldEvents {
 
             context.getSource().sendSuccess(() -> Component.translatable("message.random_crafts.generate_success",
                     Component.literal(String.valueOf(seed)).withStyle(ChatFormatting.GOLD)), true);
+
+            LOGGER.info("RandomCrafts generation took: {} ms", durationMillis);
 
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "reload");
         };
