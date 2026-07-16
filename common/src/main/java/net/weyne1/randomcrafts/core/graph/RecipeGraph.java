@@ -11,8 +11,6 @@ public class RecipeGraph {
     private final Map<String, List<CoreRecipe>> recipesByOutput = new HashMap<>();
     private final Map<String, CoreItem> coreItemById = new HashMap<>();
 
-    /* ===================== ITEMS ===================== */
-
     public CoreItem getCoreItemById(String id) {
         return coreItemById.get(id);
     }
@@ -28,34 +26,26 @@ public class RecipeGraph {
         }
     }
 
-    /* ===================== RECIPES ===================== */
-
-    /**
-     * Добавляет рецепт.
-     * Если рецепт с таким output уже есть — ПЕРЕЗАПИСЫВАЕТ его.
-     */
     public void addRecipe(CoreRecipe recipe) {
         if (recipe == null) return;
 
-        CoreItem output = normalizeItem(recipe.output());
-        List<CoreItem> inputs = recipe.inputs().stream()
-                .map(this::normalizeItem)
-                .toList();
+        registerItem(recipe.output());
+        for (CoreItem input : recipe.inputs()) {
+            registerItem(input);
+        }
 
-        CoreRecipe normalized = new CoreRecipe(recipe.id(), output, inputs, recipe.outputCount(),
-                recipe.isShapeless(), recipe.patternLayout(), recipe.category());
-
-        recipesByOutput
-                .computeIfAbsent(output.id(), k -> new ArrayList<>())
-                .add(normalized);
+        recipesByOutput.computeIfAbsent(recipe.output().id(), k -> new ArrayList<>())
+                .add(recipe);
     }
 
     public List<CoreRecipe> getAllRecipes() {
-        return recipesByOutput.values()
-                .stream()
-                .flatMap(List::stream)
-                .sorted(Comparator.comparing(CoreRecipe::id))
-                .toList();
+        List<CoreRecipe> allRecipes = new ArrayList<>(recipesByOutput.size());
+        for (List<CoreRecipe> list : recipesByOutput.values()) {
+            allRecipes.addAll(list);
+        }
+
+        allRecipes.sort(Comparator.comparing(CoreRecipe::id));
+        return allRecipes;
     }
 
     public void printTree(String itemId, String indent, Set<String> visited) {
@@ -75,23 +65,14 @@ public class RecipeGraph {
 
             for (CoreRecipe recipe : recipes) {
                 for (CoreItem input : recipe.inputs()) {
-                    printTree(input.id(), indent + "   ", new HashSet<>(visited));
+                    printTree(input.id(), indent + "   ", visited);
                 }
             }
+            visited.remove(itemId);
         }
     }
 
-    /* ===================== INTERNAL ===================== */
-
-    /**
-     * Гарантирует, что для каждого itemId в графе
-     * существует ровно один CoreItem-инстанс.
-     */
-    private CoreItem normalizeItem(CoreItem item) {
-        CoreItem existing = coreItemById.get(item.id());
-        if (existing != null) return existing;
-
-        coreItemById.put(item.id(), item);
-        return item;
+    private void registerItem(CoreItem item) {
+        coreItemById.putIfAbsent(item.id(), item);
     }
 }

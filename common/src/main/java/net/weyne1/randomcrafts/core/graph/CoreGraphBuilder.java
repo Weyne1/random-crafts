@@ -12,32 +12,33 @@ public class CoreGraphBuilder {
 
     public static RecipeGraph build(List<VanillaRecipeData> vanillaRecipes) {
         RecipeGraph graph = new RecipeGraph();
-        Map<Item, CoreItem> coreItems = new LinkedHashMap<>();
 
-        // Собирает все уникальные предметы
-        Set<Item> allItemsSet = new HashSet<>();
+        int estimatedSize = vanillaRecipes.size() * 2;
+        Map<Item, CoreItem> coreItems = new LinkedHashMap<>(estimatedSize);
+        Set<Item> allItemsSet = new HashSet<>(estimatedSize);
+
         for (VanillaRecipeData vr : vanillaRecipes) {
             allItemsSet.add(vr.output());
             allItemsSet.addAll(vr.inputs());
         }
 
-        // Сортирует их отдельно
         List<Item> sortedItems = new ArrayList<>(allItemsSet);
-        sortedItems.sort(Comparator.comparing(item ->
-                BuiltInRegistries.ITEM.getKey(item).toString()));
 
-        // Создает CoreItem в строго определенном порядке
+        sortedItems.sort(Comparator.comparing(BuiltInRegistries.ITEM::getKey));
+
         for (Item i : sortedItems) {
-            coreItems.put(i, new CoreItem(i.toString(), i.getDescriptionId(), -1, i));
+            String itemIdStr = BuiltInRegistries.ITEM.getKey(i).toString();
+            coreItems.put(i, new CoreItem(itemIdStr, i.getDescriptionId(), -1, i));
         }
 
-        // Добавляет рецепты
         for (VanillaRecipeData vr : vanillaRecipes) {
             CoreItem output = coreItems.get(vr.output());
-            List<CoreItem> inputs = new ArrayList<>();
+
+            List<CoreItem> inputs = new ArrayList<>(vr.inputs().size());
             for (Item inputItem : vr.inputs()) {
                 inputs.add(coreItems.get(inputItem));
             }
+
             graph.addRecipe(new CoreRecipe(vr.id(), output, inputs, vr.outputCount(),
                     vr.isShapeless(), vr.patternLayout(), vr.category()));
         }
